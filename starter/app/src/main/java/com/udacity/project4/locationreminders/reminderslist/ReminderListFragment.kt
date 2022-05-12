@@ -1,8 +1,13 @@
 package com.udacity.project4.locationreminders.reminderslist
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -11,8 +16,16 @@ import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import com.google.firebase.auth.FirebaseAuth
+
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import timber.log.Timber
+
+const val RESULT_OK = -1
 
 class ReminderListFragment : BaseFragment() {
+
     //use Koin to retrieve the ViewModel instance
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
@@ -43,6 +56,10 @@ class ReminderListFragment : BaseFragment() {
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
+
+        if (Firebase.auth.currentUser == null) {
+            findNavController().navigate(ReminderListFragmentDirections.toLogin())
+        }
     }
 
     override fun onResume() {
@@ -63,7 +80,6 @@ class ReminderListFragment : BaseFragment() {
     private fun setupRecyclerView() {
         val adapter = RemindersListAdapter {
         }
-
 //        setup the recycler view using the extension function
         binding.reminderssRecyclerView.setup(adapter)
     }
@@ -71,17 +87,18 @@ class ReminderListFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.logout -> {
-//                TODO: add the logout implementation
+                AuthUI.getInstance()
+                    .signOut(requireContext())
+                    .addOnCompleteListener {
+                        findNavController().navigate(ReminderListFragmentDirections.toLogin())
+                    }
             }
         }
         return super.onOptionsItemSelected(item)
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-//        display logout as menu item
         inflater.inflate(R.menu.main_menu, menu)
     }
-
 }

@@ -37,7 +37,7 @@ class SaveReminderFragment : BaseFragment() {
         binding.selectLocation.setOnClickListener {
             //            Navigate to another fragment to get the user location
             _viewModel.navigationCommand.value =
-                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
+                NavigationCommand.To(SaveReminderFragmentDirections.toSelectLocation())
         }
 
         binding.saveReminder.setOnClickListener {
