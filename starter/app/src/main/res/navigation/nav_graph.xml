@@ -20,17 +20,22 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-<!--    <activity-->
-<!--        android:id="@+id/mainActivity"-->
-<!--        android:name="com.udacity.project4.locationreminders.RemindersActivity"-->
-<!--        tools:layout="@layout/activity_reminders"-->
-<!--        android:label="MainActivity" />-->
+    <!--    <activity-->
+    <!--        android:id="@+id/mainActivity"-->
+    <!--        android:name="com.udacity.project4.locationreminders.RemindersActivity"-->
+    <!--        tools:layout="@layout/activity_reminders"-->
+    <!--        android:label="MainActivity" />-->
 
     <fragment
         android:id="@+id/saveReminder_destination"
         android:name="com.udacity.project4.locationreminders.savereminder.SaveReminderFragment"
         tools:layout="@layout/fragment_save_reminder"
         android:label="Add Reminder">
+        <argument
+            android:name="poi"
+            app:argType="com.google.android.gms.maps.model.PointOfInterest"
+            android:defaultValue="@null"
+            app:nullable="true" />
         <action
             android:id="@+id/to_reminderList"
             app:destination="@id/reminderList_destination" />
@@ -43,7 +48,18 @@
         android:id="@+id/selectLocation_destination"
         android:name="com.udacity.project4.locationreminders.savereminder.selectreminderlocation.SelectLocationFragment"
         tools:layout="@layout/fragment_select_location"
-        android:label="Select Location" />
+        android:label="Select Location" >
+        <action
+            android:id="@+id/to_saveReminder"
+            app:destination="@id/saveReminder_destination"
+            app:popUpTo="@id/reminderList_destination">
+            <argument
+                android:name="poi"
+                android:defaultValue="@null"
+                app:argType="com.google.android.gms.maps.model.PointOfInterest"
+                app:nullable="true" />
+        </action>
+    </fragment>
 
     <fragment
         android:id="@+id/login_destination"
