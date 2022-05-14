@@ -27,15 +27,26 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.*
 import com.udacity.project4.locationreminders.savereminder.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.sendNotification
 import kotlinx.android.synthetic.main.activity_reminders.*
+import kotlinx.coroutines.*
+import org.koin.android.ext.android.inject
+import kotlin.coroutines.CoroutineContext
 
 /**
  * The RemindersActivity that holds the reminders fragments
  */
-class RemindersActivity : AppCompatActivity() {
+class RemindersActivity : AppCompatActivity(), CoroutineScope {
+
+    private var coroutineJob: Job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + coroutineJob
 
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
@@ -58,6 +69,29 @@ class RemindersActivity : AppCompatActivity() {
         setContentView(R.layout.activity_reminders)
 
         geofencingClient = LocationServices.getGeofencingClient(this)
+
+        val remindersLocalRepository: RemindersLocalRepository by inject()
+
+//        Interaction to the repository has to be through a coroutine scope
+        CoroutineScope(coroutineContext).launch(SupervisorJob()) {
+            //get the reminder with the request id
+            val result = remindersLocalRepository.getReminder("654841c1-b4a5-448c-a2c0-66ff82fdedc3")
+            if (result is Result.Success<ReminderDTO>) {
+                val reminderDTO = result.data
+
+                //send a notification to the user with the reminder details
+                sendNotification(
+                    this@RemindersActivity, ReminderDataItem(
+                        reminderDTO.title,
+                        reminderDTO.description,
+                        reminderDTO.location,
+                        reminderDTO.latitude,
+                        reminderDTO.longitude,
+                        reminderDTO.id
+                    )
+                )
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -74,10 +74,6 @@ class SaveReminderFragment : BaseFragment() {
 
             addGeofenceForClue(latitude, longitude, reminderData)
         }
-
-
-        val remindersLocalRepository: RemindersLocalRepository by inject()
-        Log.e(TAG, "onViewCreated" +remindersLocalRepository)
     }
 
     override fun onResume() {
