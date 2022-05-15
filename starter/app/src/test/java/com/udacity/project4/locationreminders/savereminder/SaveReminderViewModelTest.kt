@@ -14,13 +14,11 @@ import com.udacity.project4.locationreminders.getOrAwaitValue
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.CoreMatchers.*
+import org.junit.*
+import org.koin.core.context.stopKoin
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
@@ -48,6 +46,11 @@ class SaveReminderViewModelTest {
         tasksRepository = FakeDataSource()
 
         viewModel = SaveReminderViewModel(context, tasksRepository)
+    }
+
+    @After
+    fun after() {
+        stopKoin()
     }
 
     @Test
