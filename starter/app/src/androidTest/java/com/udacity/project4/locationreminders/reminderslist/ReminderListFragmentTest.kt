@@ -1,9 +1,7 @@
 package com.udacity.project4.locationreminders.reminderslist
 
-import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import android.view.View
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -34,11 +32,7 @@ import org.koin.test.get
 import androidx.test.espresso.matcher.ViewMatchers.*
 import org.mockito.Mockito.*
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.RootMatchers.withDecorView
-import com.codingwithmitch.espressouitestexamples.ToastMatcher
 import kotlinx.android.synthetic.main.fragment_save_reminder.*
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.not
 
 //UI Testing
 @RunWith(AndroidJUnit4::class)
