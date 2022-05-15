@@ -3,7 +3,6 @@ package com.udacity.project4.locationreminders.savereminder
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.common.base.CharMatcher.`is`
 import com.udacity.project4.MyApp
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.MainCoroutineRule

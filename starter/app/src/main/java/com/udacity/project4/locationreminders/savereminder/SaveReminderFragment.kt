@@ -75,7 +75,7 @@ class SaveReminderFragment : BaseFragment() {
                 val reminderData =  ReminderDataItem(title, description, location, latitude, longitude)
                 addGeofenceForClue(latitude, longitude, reminderData)
             } ?: run {
-                _viewModel.showSnackBarInt.value = R.string.err_select_location
+                _viewModel.showToast.value = getString(R.string.err_select_location)
             }
         }
     }

@@ -1,14 +1,8 @@
 package com.udacity.project4
 
 import android.app.Application
-import android.os.Bundle
-import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
-import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
-import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -35,11 +29,17 @@ import org.koin.test.get
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.ext.junit.rules.ActivityScenarioRule
+import com.codingwithmitch.espressouitestexamples.ToastMatcher
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.koin.test.inject
+import org.hamcrest.CoreMatchers
+import org.junit.Rule
+
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -53,8 +53,6 @@ class RemindersActivityTest :
 
     // An Idling Resource that waits for Data Binding to have no pending bindings
     private val dataBindingIdlingResource = DataBindingIdlingResource()
-
-    private val viewModel: SaveReminderViewModel by inject()
 
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
@@ -123,6 +121,11 @@ class RemindersActivityTest :
         // Click on the edit task button
         onView(withId(R.id.addReminderFAB)).perform(click())
         onView(withId(R.id.reminderTitle)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        // Is toast displayed and is the message correct
+        onView(withText(R.string.err_select_location)).check(matches(isDisplayed()))
 
         val reminderData =  ReminderDTO(
             "Buy Food",
