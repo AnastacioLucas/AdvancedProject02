@@ -58,10 +58,12 @@ class RemindersDaoTest {
         // WHEN - Get the task by id from the database
         val loaded = database.reminderDao().getReminderById(reminder.id)
 
-        // THEN - The loaded data contains the expected values
-        MatcherAssert.assertThat<ReminderDTO>(loaded as ReminderDTO, CoreMatchers.notNullValue())
-        MatcherAssert.assertThat(loaded.id, CoreMatchers.`is`(reminder.id))
-        MatcherAssert.assertThat(loaded.title, CoreMatchers.`is`(reminder.title))
-        MatcherAssert.assertThat(loaded.description, CoreMatchers.`is`(reminder.description))
+        loaded?.let {
+            // THEN - The loaded data contains the expected values
+            MatcherAssert.assertThat(it, CoreMatchers.notNullValue())
+            MatcherAssert.assertThat(it.id, CoreMatchers.`is`(reminder.id))
+            MatcherAssert.assertThat(it.title, CoreMatchers.`is`(reminder.title))
+            MatcherAssert.assertThat(it.description, CoreMatchers.`is`(reminder.description))
+        }
     }
 }
