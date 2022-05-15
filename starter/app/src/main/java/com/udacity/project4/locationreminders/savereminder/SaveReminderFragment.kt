@@ -67,12 +67,16 @@ class SaveReminderFragment : BaseFragment() {
             val title = _viewModel.reminderTitle.value
             val description = _viewModel.reminderDescription.value
             val location = _viewModel.reminderSelectedLocationStr.value
+            val selectedPOI = _viewModel.selectedPOI.value
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-            val reminderData =  ReminderDataItem(title, description, location, latitude, longitude)
-
-            addGeofenceForClue(latitude, longitude, reminderData)
+            selectedPOI?.let {
+                val reminderData =  ReminderDataItem(title, description, location, latitude, longitude)
+                addGeofenceForClue(latitude, longitude, reminderData)
+            } ?: run {
+                _viewModel.showSnackBarInt.value = R.string.err_select_location
+            }
         }
     }
 

@@ -1,8 +1,14 @@
 package com.udacity.project4
 
 import android.app.Application
+import android.os.Bundle
+import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -27,15 +33,17 @@ import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.*
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.koin.test.inject
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
+@ExperimentalCoroutinesApi
 //END TO END test to black box test the app
 class RemindersActivityTest :
     AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
@@ -45,6 +53,8 @@ class RemindersActivityTest :
 
     // An Idling Resource that waits for Data Binding to have no pending bindings
     private val dataBindingIdlingResource = DataBindingIdlingResource()
+
+    private val viewModel: SaveReminderViewModel by inject()
 
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
@@ -106,7 +116,7 @@ class RemindersActivityTest :
     }
 
     @Test
-    fun saveReminder_navigateToSaveReminders() = runBlocking {
+    fun clickNewReminder_navigateToSaveRemindersWithActivity() = runBlocking {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
@@ -122,6 +132,8 @@ class RemindersActivityTest :
             -1253.15416456
         )
         repository.saveReminder(reminderData)
+        onView(isRoot()).perform(ViewActions.pressBack());
+        onView(withId(R.id.title)).check(matches(withText(reminderData.title)))
 
         // When using ActivityScenario.launch, always call close()
         activityScenario.close()
