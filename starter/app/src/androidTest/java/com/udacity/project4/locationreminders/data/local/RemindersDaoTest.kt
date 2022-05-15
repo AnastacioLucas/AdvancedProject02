@@ -6,17 +6,15 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-
-import org.junit.Before;
-import org.junit.Rule;
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import org.junit.runner.RunWith;
-
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.notNullValue
-import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert
 import org.junit.After
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
@@ -25,6 +23,45 @@ import org.junit.Test
 @SmallTest
 class RemindersDaoTest {
 
-//    TODO: Add testing implementation to the RemindersDao.kt
+    private lateinit var database: RemindersDatabase
 
+    // Executes each task synchronously using Architecture Components.
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
+
+    @Before
+    fun initDb() {
+        // using an in-memory database because the information stored here disappears when the
+        // process is killed
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        ).build()
+    }
+
+    @After
+    fun closeDb() = database.close()
+
+    @Test
+    fun insertTaskAndGetById() = runBlockingTest {
+        // GIVEN - insert a reminder
+        val reminder =  ReminderDTO(
+            "Buy Food",
+            "remember of buy vegetable ",
+            "Supermarket BRs",
+            7895.15416546,
+            -1253.15416456
+        )
+
+        database.reminderDao().saveReminder(reminder)
+
+        // WHEN - Get the task by id from the database
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+
+        // THEN - The loaded data contains the expected values
+        MatcherAssert.assertThat<ReminderDTO>(loaded as ReminderDTO, CoreMatchers.notNullValue())
+        MatcherAssert.assertThat(loaded.id, CoreMatchers.`is`(reminder.id))
+        MatcherAssert.assertThat(loaded.title, CoreMatchers.`is`(reminder.title))
+        MatcherAssert.assertThat(loaded.description, CoreMatchers.`is`(reminder.description))
+    }
 }

@@ -26,9 +26,9 @@ buildscript {
     }
 }
 
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-}
+//wrapper {
+//    distributionType = Wrapper.DistributionType.ALL
+//}
 
 task clean(type: Delete) {
     delete rootProject.buildDir
