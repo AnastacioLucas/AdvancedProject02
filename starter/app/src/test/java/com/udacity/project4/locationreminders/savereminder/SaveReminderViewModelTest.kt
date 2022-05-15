@@ -1,15 +1,26 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.base.CharMatcher.`is`
+import com.udacity.project4.MyApp
+import com.udacity.project4.R
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
-
+import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.getOrAwaitValue
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.CoreMatchers.*
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
@@ -31,27 +42,52 @@ class SaveReminderViewModelTest {
 
     @Before
     fun setupViewModel() {
+        var context = ApplicationProvider.getApplicationContext<MyApp>()
+
         //We initialise the tasks to 3, with one active and two completed
         tasksRepository = FakeDataSource()
-//        val task1 = Task("Title1", "Description1")
-//        val task2 = Task("Title2", "Description2", true)
-//        val task3 = Task("Title3", "Description3", true)
-//        tasksRepository.addTasks(task1, task2, task3)
-//
-        viewModel = SaveReminderViewModel(tasksRepository)
+
+        viewModel = SaveReminderViewModel(context, tasksRepository)
     }
 
     @Test
-    fun addNewTask_setsNewTaskEvent() {
-//        // Given a fresh ViewModel
-//
-//        // When adding a new task
-//        viewModel.addNewTask()
-//
-//        // Then the new task event is triggered
-//        val value = viewModel.newTaskEvent.getOrAwaitValue()
-//        MatcherAssert.assertThat(
-//            value.getContentIfNotHandled(), (CoreMatchers.not(CoreMatchers.nullValue()))
-//        )
+    fun saveReminder_setsValidateInfo() = runBlocking {
+        // Given a fresh ViewModel
+
+        val reminderData =  ReminderDataItem(
+            "Buy Food",
+            "remember of buy vegetable ",
+            "Supermarket BRs",
+            7895.15416546,
+            -1253.15416456
+        )
+
+        viewModel.validateAndSaveReminder(reminderData)
+
+        when (val result = tasksRepository.getReminders()) {
+            is Result.Success<*> -> {
+                val listOfReminder = result.data as List<ReminderDTO>
+
+                Assert.assertEquals(listOfReminder.size, 1)
+            }
+        }
+    }
+
+    @Test
+    fun saveReminder_errorTitleMissing() {
+        // Given a fresh ViewModel
+        val reminderData =  ReminderDataItem(
+            "",
+            "remember of buy vegetable ",
+            "Supermarket BRs",
+            7895.15416546,
+            -1253.15416456
+        )
+
+        viewModel.validateAndSaveReminder(reminderData)
+
+//    // Assert that the snackbar has been updated with the correct text.
+        val snackbarText: Int =  viewModel.showSnackBarInt.getOrAwaitValue()
+        assertThat(snackbarText, `is`(R.string.err_enter_title))
     }
 }
