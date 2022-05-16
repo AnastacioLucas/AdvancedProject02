@@ -88,6 +88,7 @@ class SaveReminderFragment : BaseFragment() {
             _viewModel.reminderSelectedLocationStr.value = it?.name
             _viewModel.latitude.value = it?.latLng?.latitude
             _viewModel.longitude.value = it?.latLng?.longitude
+            _viewModel.selectedPOI.value = it
         }
     }
 
