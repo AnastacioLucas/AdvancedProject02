@@ -283,11 +283,6 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
             }
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        removeGeofences()
-    }
 }
 
 private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33

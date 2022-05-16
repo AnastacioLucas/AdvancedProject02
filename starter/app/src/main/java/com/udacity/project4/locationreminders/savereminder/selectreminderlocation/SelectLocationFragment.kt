@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +37,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private var locationPermissionGranted = false
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private val defaultLocation = LatLng(37.422160, -122.084270)
+    private val TAG = SelectLocationFragment::class.java.simpleName
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -110,6 +112,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
         setMapLongClick(map)
         setPoiClick(map)
+        setMapStyle(map)
+        map.setOnInfoWindowClickListener {
+            val poi = PointOfInterest(it.position, "placeId", it.title!!)
+            onLocationSelected(poi)
+        }
 
         // Prompt the user for permission.
         getLocationPermission()
@@ -129,7 +136,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(latLng)
-                    .title(getString(R.string.dropped_pin))
+                    .title(getString(R.string.random_location))
                     .snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
             )
@@ -145,7 +152,26 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     .title(poi.name)
             )
             poiMarker?.showInfoWindow()
-            onLocationSelected(poi)
+        }
+    }
+
+    // Allows map styling and theming to be customized.
+    private fun setMapStyle(map: GoogleMap) {
+        try {
+            // Customize the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val success = map.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    requireContext(),
+                    R.raw.map_style
+                )
+            )
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Can't find style. Error: ", e)
         }
     }
 
