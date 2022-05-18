@@ -1,6 +1,8 @@
 package com.udacity.project4
 
 import android.app.Application
+import android.util.Log
+import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.IdlingRegistry
@@ -30,9 +32,19 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.util.ToastMatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.not
+import org.hamcrest.CoreMatchers.startsWith
+import org.koin.test.inject
+import org.junit.Rule
 
 
 @RunWith(AndroidJUnit4::class)
@@ -108,7 +120,7 @@ class RemindersActivityTest :
     }
 
     @Test
-    fun clickNewReminder_navigateToSaveRemindersWithActivity() = runBlocking {
+    fun clickNewReminder_navigateToSaveRemindersTestSnackBar() = runBlocking {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
@@ -128,11 +140,49 @@ class RemindersActivityTest :
             7895.15416546,
             -1253.15416456
         )
+
         repository.saveReminder(reminderData)
         onView(isRoot()).perform(ViewActions.pressBack());
         onView(withId(R.id.title)).check(matches(withText(reminderData.title)))
 
         // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
+    }
+
+    @Test
+    fun clickNewReminder_navigateToSaveRemindersTestToast() = runBlocking {
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+//        dataBindingIdlingResource.monitorActivity(activityScenario)
+
+        // Click on the edit task button
+        onView(withId(R.id.addReminderFAB)).perform(click())
+
+        val reminder =  ReminderDataItem(
+            "Buy Food",
+            "remember of buy vegetable ",
+            "Supermarket BRs",
+            7895.15416546,
+            -1253.15416456
+        )
+//        saveReminderViewModel.saveReminder(reminder)
+
+        var activityVar: RemindersActivity? = null
+        activityScenario.onActivity {
+            activityVar = it
+        }
+
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        //Test_01
+//        if (activityVar != null) {
+//            onView(withText(R.string.err_select_location))
+//                .inRoot(RootMatchers.withDecorView(
+//                    not(decorView)))
+//                        .check(matches(isDisplayed()));
+//        }
+
+        //Test_02
+//        onView(withText(R.string.err_select_location)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
         activityScenario.close()
     }
 }

@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
@@ -33,6 +34,8 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import org.mockito.Mockito.*
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import kotlinx.android.synthetic.main.fragment_save_reminder.*
+import org.koin.android.ext.android.inject
+import org.koin.test.inject
 
 //UI Testing
 @RunWith(AndroidJUnit4::class)
@@ -101,7 +104,7 @@ class ReminderListFragmentTest :
             Navigation.setViewNavController(it.view!!, navController)
         }
 
-        onView(withId(R.id.title)).check(ViewAssertions.matches(ViewMatchers.withText(reminderData.title)))
+        onView(withId(R.id.title)).check(ViewAssertions.matches(withText(reminderData.title)))
 
         onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
 
@@ -109,29 +112,6 @@ class ReminderListFragmentTest :
         verify(navController).navigate(
             ReminderListFragmentDirections.toSaveReminder()
         )
-    }
-
-    @Test
-    fun clickSaveNewReminder_navigateToRemindersListWithFragment(){
-//        val reminderData =  ReminderDataItem(
-//            "",
-//            "remember of buy vegetable ",
-//            "Supermarket BRs",
-//            7895.15416546,
-//            -1253.15416456
-//        )
-
-        // GIVEN - On the home screen
-        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.AppTheme)
-        val navController = mock(NavController::class.java)
-
-        scenario.onFragment {
-            Navigation.setViewNavController(it.view!!, navController)
-            it.saveReminder.performClick()
-            onView(withText(R.string.err_select_location)).check(ViewAssertions.matches(isDisplayed()))
-        }
-
-        Thread.sleep(2000)
     }
 }
 

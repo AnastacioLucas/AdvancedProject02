@@ -11,6 +11,8 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.getOrAwaitValue
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.junit.runner.RunWith
@@ -18,10 +20,11 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.CoreMatchers.*
 import org.junit.*
 import org.koin.core.context.stopKoin
+import org.koin.test.AutoCloseKoinTest
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
-class SaveReminderViewModelTest {
+class SaveReminderViewModelTest : AutoCloseKoinTest() {
 
     private lateinit var tasksRepository: FakeDataSource
 
@@ -42,14 +45,9 @@ class SaveReminderViewModelTest {
         var context = ApplicationProvider.getApplicationContext<MyApp>()
 
         //We initialise the tasks to 3, with one active and two completed
-        tasksRepository = FakeDataSource()
+        tasksRepository = FakeDataSource(Dispatchers.Main)
 
         viewModel = SaveReminderViewModel(context, tasksRepository)
-    }
-
-    @After
-    fun after() {
-        stopKoin()
     }
 
     @Test
@@ -68,7 +66,7 @@ class SaveReminderViewModelTest {
 
         when (val result = tasksRepository.getReminders()) {
             is Result.Success<*> -> {
-                val listOfReminder = result.data as List<ReminderDTO>
+                val listOfReminder = result.data as List<*>
 
                 Assert.assertEquals(listOfReminder.size, 1)
             }
