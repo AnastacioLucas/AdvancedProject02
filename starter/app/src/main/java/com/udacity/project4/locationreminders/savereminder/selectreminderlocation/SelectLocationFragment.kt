@@ -133,6 +133,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             val poi = PointOfInterest(it.position, "placeId", it.title!!)
             onLocationSelected(poi)
         }
+
+        updateLocationUI()
     }
 
     // Called when user makes a long press gesture on the map.

@@ -71,14 +71,17 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-            selectedPOI?.let {
-                val reminderData =  ReminderDataItem(title, description, location, latitude, longitude)
+            val reminderData =  ReminderDataItem(title, description, location, latitude, longitude)
+            if(_viewModel.validateEnteredData(reminderData)){
                 addGeofenceForClue(latitude, longitude, reminderData)
-            } ?: run {
-                _viewModel.showSnackBarInt.value = R.string.err_select_location
-
-                _viewModel.showToast.value = getString(R.string.err_select_location)
             }
+
+//            selectedPOI?.let {
+//            } ?: run {
+//                _viewModel.showSnackBarInt.value = R.string.err_select_location
+//
+//                _viewModel.showToast.value = getString(R.string.err_select_location)
+//            }
         }
     }
 
@@ -143,14 +146,9 @@ class SaveReminderFragment : BaseFragment() {
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
             addOnSuccessListener {
                 // Geofences added.
-                Toast.makeText(requireContext(), R.string.geofences_added,
-                    Toast.LENGTH_SHORT)
-                    .show()
-                Log.e("Add Geofence", geofence.requestId)
                 // Tell the viewmodel that we've reached the end of the game and
                 // activated the last "geofence" --- by removing the Geofence.
 //                        viewModel.geofenceActivated()
-
                 binding.viewModel?.validateAndSaveReminder(reminderData)
             }
             addOnFailureListener {

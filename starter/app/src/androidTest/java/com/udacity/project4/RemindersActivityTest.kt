@@ -1,8 +1,6 @@
 package com.udacity.project4
 
 import android.app.Application
-import android.util.Log
-import android.view.View
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.IdlingRegistry
@@ -14,8 +12,6 @@ import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
-import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -31,20 +27,28 @@ import org.koin.test.get
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.util.ToastMatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import androidx.test.espresso.action.Press
+
+import androidx.test.espresso.action.CoordinatesProvider
+
+import androidx.test.espresso.action.Tap
+
+import androidx.test.espresso.action.GeneralClickAction
+
+import androidx.test.espresso.ViewAction
+import android.util.DisplayMetrics
+import android.util.Log
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import com.udacity.project4.util.*
 import org.hamcrest.CoreMatchers
-import org.hamcrest.CoreMatchers.not
-import org.hamcrest.CoreMatchers.startsWith
-import org.koin.test.inject
-import org.junit.Rule
+import org.hamcrest.core.IsNot
+import kotlin.math.roundToInt
 
 
 @RunWith(AndroidJUnit4::class)
@@ -131,7 +135,7 @@ class RemindersActivityTest :
         onView(withId(R.id.saveReminder)).perform(click())
 
         // Is toast displayed and is the message correct
-        onView(withText(R.string.err_select_location)).check(matches(isDisplayed()))
+        onView(withText(R.string.err_enter_title)).check(matches(isDisplayed()))
 
         val reminderData =  ReminderDTO(
             "Buy Food",
@@ -152,37 +156,60 @@ class RemindersActivityTest :
     @Test
     fun clickNewReminder_navigateToSaveRemindersTestToast() = runBlocking {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
-//        dataBindingIdlingResource.monitorActivity(activityScenario)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
 
         // Click on the edit task button
         onView(withId(R.id.addReminderFAB)).perform(click())
 
         val reminder =  ReminderDataItem(
             "Buy Food",
-            "remember of buy vegetable ",
+            "remember of buy vegetable",
             "Supermarket BRs",
             7895.15416546,
             -1253.15416456
         )
-//        saveReminderViewModel.saveReminder(reminder)
 
-        var activityVar: RemindersActivity? = null
-        activityScenario.onActivity {
-            activityVar = it
-        }
+        val displayMetrics: DisplayMetrics = appContext.resources.displayMetrics
+
+        val height = displayMetrics.heightPixels/2
+        val width = displayMetrics.widthPixels/2
+
+        onView(withId(R.id.selectLocation)).perform(click())
+
+        onView(withId(R.id.cl_select_location_map_area)).perform(actionLongClick(width,height))
+        onView(withId(R.id.cl_select_location_map_area)).perform(actionClick(width,height))
+        Thread.sleep(700)
+
+        val littleHigh = (height*0.75).roundToInt()
+        onView(withId(R.id.cl_select_location_map_area)).perform(actionClick(width, littleHigh))
+
+        onView(withId(R.id.reminderTitle))
+            .perform(replaceText("Buy Food"))
+        onView(withId(R.id.reminderDescription))
+            .perform(replaceText("remember of buy vegetable"))
 
         onView(withId(R.id.saveReminder)).perform(click())
 
-        //Test_01
-//        if (activityVar != null) {
+        activityScenario.onActivity {
+            //Test_01
 //            onView(withText(R.string.err_select_location))
-//                .inRoot(RootMatchers.withDecorView(
-//                    not(decorView)))
+//                .inRoot(withDecorView(
+//                    not(activityVar?.window?.decorView)))
 //                        .check(matches(isDisplayed()));
-//        }
 
-        //Test_02
-//        onView(withText(R.string.err_select_location)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
+            //Test_02
+            onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
+                IsNot.not(
+                    CoreMatchers.`is`(
+                        it?.window?.decorView
+                    )
+                )
+            )).check(matches(isDisplayed()))
+        }
+
+        //Test_03
+//        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
+
         activityScenario.close()
     }
 }
