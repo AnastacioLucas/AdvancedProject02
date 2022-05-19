@@ -33,17 +33,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import androidx.test.espresso.action.Press
-
-import androidx.test.espresso.action.CoordinatesProvider
-
-import androidx.test.espresso.action.Tap
-
-import androidx.test.espresso.action.GeneralClickAction
-
-import androidx.test.espresso.ViewAction
 import android.util.DisplayMetrics
-import android.util.Log
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import com.udacity.project4.util.*
 import org.hamcrest.CoreMatchers
@@ -178,10 +168,11 @@ class RemindersActivityTest :
 
         onView(withId(R.id.cl_select_location_map_area)).perform(actionLongClick(width,height))
         onView(withId(R.id.cl_select_location_map_area)).perform(actionClick(width,height))
-        Thread.sleep(700)
+        Thread.sleep(600)
 
         val littleHigh = (height*0.75).roundToInt()
         onView(withId(R.id.cl_select_location_map_area)).perform(actionClick(width, littleHigh))
+        Thread.sleep(100)
 
         onView(withId(R.id.reminderTitle))
             .perform(replaceText("Buy Food"))
@@ -190,22 +181,25 @@ class RemindersActivityTest :
 
         onView(withId(R.id.saveReminder)).perform(click())
 
+        var activity: RemindersActivity? = null
         activityScenario.onActivity {
-            //Test_01
+            activity = it
+        }
+
+        //Test_01
 //            onView(withText(R.string.err_select_location))
 //                .inRoot(withDecorView(
 //                    not(activityVar?.window?.decorView)))
 //                        .check(matches(isDisplayed()));
 
-            //Test_02
-            onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
-                IsNot.not(
-                    CoreMatchers.`is`(
-                        it?.window?.decorView
-                    )
+        //Test_02
+        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
+            IsNot.not(
+                CoreMatchers.`is`(
+                    activity?.window?.decorView
                 )
-            )).check(matches(isDisplayed()))
-        }
+            )
+        )).check(matches(isDisplayed()))
 
         //Test_03
 //        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
