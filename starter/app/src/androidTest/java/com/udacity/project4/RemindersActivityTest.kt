@@ -193,16 +193,16 @@ class RemindersActivityTest :
 //                        .check(matches(isDisplayed()));
 
         //Test_02
-        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
-            IsNot.not(
-                CoreMatchers.`is`(
-                    activity?.window?.decorView
-                )
-            )
-        )).check(matches(isDisplayed()))
+//        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
+//            IsNot.not(
+//                CoreMatchers.`is`(
+//                    activity?.window?.decorView
+//                )
+//            )
+//        )).check(matches(isDisplayed()))
 
         //Test_03
-//        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
+        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
 
         activityScenario.close()
     }

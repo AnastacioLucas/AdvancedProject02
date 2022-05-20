@@ -34,7 +34,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.udacity.project4.BuildConfig
-import timber.log.Timber
 
 const val RESULT_OK = -1
 

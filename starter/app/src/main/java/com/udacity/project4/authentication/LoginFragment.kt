@@ -33,7 +33,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.databinding.FragmentLoginBinding
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragmentDirections
-import timber.log.Timber
 
 const val RESULT_OK = -1
 
