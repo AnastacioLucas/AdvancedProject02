@@ -181,27 +181,6 @@ class RemindersActivityTest :
 
         onView(withId(R.id.saveReminder)).perform(click())
 
-        var activity: RemindersActivity? = null
-        activityScenario.onActivity {
-            activity = it
-        }
-
-        //Test_01
-//            onView(withText(R.string.err_select_location))
-//                .inRoot(withDecorView(
-//                    not(activityVar?.window?.decorView)))
-//                        .check(matches(isDisplayed()));
-
-        //Test_02
-//        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(
-//            IsNot.not(
-//                CoreMatchers.`is`(
-//                    activity?.window?.decorView
-//                )
-//            )
-//        )).check(matches(isDisplayed()))
-
-        //Test_03
         onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))
 
         activityScenario.close()
