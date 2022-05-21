@@ -17,6 +17,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
@@ -32,8 +34,10 @@ import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.*
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.REQUEST_LOCATION_PERMISSION_SELECT_LOCATION
 import com.udacity.project4.utils.sendNotification
 import kotlinx.android.synthetic.main.activity_reminders.*
+import kotlinx.android.synthetic.main.fragment_select_location.*
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
@@ -69,33 +73,32 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
 
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        val remindersLocalRepository: RemindersLocalRepository by inject()
-
+//        val remindersLocalRepository: RemindersLocalRepository by inject()
 //        Interaction to the repository has to be through a coroutine scope
-        CoroutineScope(coroutineContext).launch(SupervisorJob()) {
-            //get the reminder with the request id
-            val result = remindersLocalRepository.getReminder("654841c1-b4a5-448c-a2c0-66ff82fdedc3")
-            if (result is Result.Success<ReminderDTO>) {
-                val reminderDTO = result.data
-
-                //send a notification to the user with the reminder details
-                sendNotification(
-                    this@RemindersActivity, ReminderDataItem(
-                        reminderDTO.title,
-                        reminderDTO.description,
-                        reminderDTO.location,
-                        reminderDTO.latitude,
-                        reminderDTO.longitude,
-                        reminderDTO.id
-                    )
-                )
-            }
-        }
+//        CoroutineScope(coroutineContext).launch(SupervisorJob()) {
+//            //get the reminder with the request id
+//            val result = remindersLocalRepository.getReminder("654841c1-b4a5-448c-a2c0-66ff82fdedc3")
+//            if (result is Result.Success<ReminderDTO>) {
+//                val reminderDTO = result.data
+//
+//                //send a notification to the user with the reminder details
+//                sendNotification(
+//                    this@RemindersActivity, ReminderDataItem(
+//                        reminderDTO.title,
+//                        reminderDTO.description,
+//                        reminderDTO.location,
+//                        reminderDTO.latitude,
+//                        reminderDTO.longitude,
+//                        reminderDTO.id
+//                    )
+//                )
+//            }
+//        }
     }
 
     override fun onStart() {
         super.onStart()
-        viewForSnackbar = findViewById<View>(R.id.nav_host_fragment)
+        viewForSnackbar = findViewById(R.id.nav_host_fragment)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -113,13 +116,15 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
  *  checkDeviceLocationSettingsAndStartGeofence again to make sure it's actually on, but
  *  we don't resolve the check to keep the user from seeing an endless loop.
  */
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
-            // We don't rely on the result code, but just check the location setting again
-            checkDeviceLocationSettingsAndStartGeofence(false)
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        Log.d("GeoFenceTest", "onActivityResult()-activity: $requestCode")
+////        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
+////            // We don't rely on the result code, but just check the location setting again
+////            checkDeviceLocationSettingsAndStartGeofence(false)
+////        }
+//    }
+
 
     /*
      * In all cases, we need to have the location permission.  On Android 10+ (Q) we need to have
@@ -131,7 +136,14 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d(TAG, "onRequestPermissionResult")
+        Log.d("GeoFenceTest", "onRequestPermissionsResult()-activity 01: $requestCode")
+
+        if (requestCode != REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE ||
+            requestCode != REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE ||
+            requestCode != REQUEST_TURN_DEVICE_LOCATION_ON ) {
+            return
+        }
+        Log.d("GeoFenceTest", "onRequestPermissionsResult()-activity 02: ")
 
         if (
             grantResults.isEmpty() ||
@@ -163,6 +175,7 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
      * Starts the permission check and Geofence process only if the Geofence associated with the
      * current hint isn't yet active.
      */
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun checkPermissionsAndStartGeofencing() {
 //        if (viewModel.geofenceIsActive()) return
         if (foregroundAndBackgroundLocationPermissionApproved()) {
@@ -170,6 +183,13 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
         } else {
             requestForegroundAndBackgroundLocationPermissions()
         }
+    }
+
+    fun setSnackBar(resId: Int, listener: View.OnClickListener){
+        snackbar = Snackbar.make(
+            viewForSnackbar, resId, Snackbar.LENGTH_INDEFINITE
+        )
+        snackbar?.setAction(android.R.string.ok, listener)
     }
 
     /*
@@ -180,6 +200,8 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_LOW_POWER
         }
+        Log.d("GeoFenceTest", "checkDeviceLocationSettingsAndStartGeofence(): ")
+
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
         val settingsClient = LocationServices.getSettingsClient(this)
@@ -199,14 +221,11 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
                     Log.d(TAG, "Error geting location settings resolution: " + sendEx.message)
                 }
             } else {
-                snackbar = Snackbar.make(
-                    viewForSnackbar,
-                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-                )
-                snackbar?.setAction(android.R.string.ok) {
-                    checkDeviceLocationSettingsAndStartGeofence()
-                }
                 snackbar?.show()
+            }
+        }
+        locationSettingsResponseTask.addOnCompleteListener {
+            if ( it.isSuccessful ) {
             }
         }
     }
@@ -220,8 +239,8 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
      *  Determines whether the app has the appropriate permissions across Android 10+ and all other
      *  Android versions.
      */
-    @TargetApi(29)
-    fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
         val foregroundLocationApproved = (
                 PackageManager.PERMISSION_GRANTED ==
                         ActivityCompat.checkSelfPermission(this,
@@ -241,7 +260,7 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
     /*
      *  Requests ACCESS_FINE_LOCATION and (on Android 10+ (Q) ACCESS_BACKGROUND_LOCATION.
      */
-    @TargetApi(29 )
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestForegroundAndBackgroundLocationPermissions() {
         if (foregroundAndBackgroundLocationPermissionApproved())
             return
