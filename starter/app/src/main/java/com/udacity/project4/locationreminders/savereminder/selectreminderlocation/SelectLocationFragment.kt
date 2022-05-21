@@ -134,29 +134,32 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             onLocationSelected(poi)
         }
 
-        enableMyLocation()
+//        enableMyLocation()
+        (requireActivity() as RemindersActivity).checkPermissionsAndStartGeofencing()
+        updateLocationUI()
     }
 
-    // Checks if users have given their location and sets location enabled if so.
-    private fun enableMyLocation() {
-        if (isPermissionGranted()) {
-            map.setMyLocationEnabled(true)
-            updateLocationUI()
-        }
-        else {
-            requestPermissions(
-                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
-            )
-        }
-    }
-
-    // Checks that users have given permission
-    private fun isPermissionGranted() : Boolean {
-        return ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
+//    // Checks if users have given their location and sets location enabled if so.
+//    @SuppressLint("MissingPermission")
+//    private fun enableMyLocation() {
+//        if (isPermissionGranted()) {
+//            map.setMyLocationEnabled(true)
+//            updateLocationUI()
+//        }
+//        else {
+//            requestPermissions(
+//                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+//                REQUEST_LOCATION_PERMISSION
+//            )
+//        }
+//    }
+//
+//    // Checks that users have given permission
+//    private fun isPermissionGranted() : Boolean {
+//        return ContextCompat.checkSelfPermission(
+//            requireContext(),
+//            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+//    }
 
     // Called when user makes a long press gesture on the map.
     private fun setMapLongClick(map: GoogleMap) {
@@ -217,10 +220,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun onStart() {
         super.onStart()
-//        (requireActivity() as RemindersActivity).checkPermissionsAndStartGeofencing()
+        (requireActivity() as RemindersActivity).checkPermissionsAndStartGeofencing()
     }
 
-    @SuppressLint("MissingPermission")
     private fun updateLocationUI() {
         if (this::map.isInitialized) {
             try {

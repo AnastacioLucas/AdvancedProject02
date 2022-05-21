@@ -30,15 +30,12 @@ import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
 const val GEOFENCE_RADIUS_IN_METERS = 100f
-const val ACTION_GEOFENCE_EVENT =
-    "SaveReminderFragment.Remainder.action.ACTION_GEOFENCE_EVENT"
 
 private const val TAG = "GeofenceTransitionsJobIntentService"
 class SaveReminderFragment : BaseFragment() {
     //Get the view model this time as a single to be shared with the another fragment
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -75,13 +72,6 @@ class SaveReminderFragment : BaseFragment() {
             if(_viewModel.validateEnteredData(reminderData)){
                 addGeofenceForClue(latitude, longitude, reminderData)
             }
-
-//            selectedPOI?.let {
-//            } ?: run {
-//                _viewModel.showSnackBarInt.value = R.string.err_select_location
-//
-//                _viewModel.showToast.value = getString(R.string.err_select_location)
-//            }
         }
     }
 
@@ -143,13 +133,13 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
             addOnSuccessListener {
                 // Geofences added.
                 // Tell the viewmodel that we've reached the end of the game and
                 // activated the last "geofence" --- by removing the Geofence.
-//                        viewModel.geofenceActivated()
-                binding.viewModel?.validateAndSaveReminder(reminderData)
+    //                        viewModel.geofenceActivated()
+                binding.viewModel?.saveReminder(reminderData)
             }
             addOnFailureListener {
                 // Failed to add geofences.

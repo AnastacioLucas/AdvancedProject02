@@ -179,6 +179,9 @@ class RemindersActivityTest :
         onView(withId(R.id.reminderDescription))
             .perform(replaceText("remember of buy vegetable"))
 
+
+        Thread.sleep(2000)
+
         onView(withId(R.id.saveReminder)).perform(click())
 
         onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(matches(isDisplayed()))

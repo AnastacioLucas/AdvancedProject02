@@ -14,10 +14,8 @@ import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.locationreminders.savereminder.ACTION_GEOFENCE_EVENT
 import kotlinx.android.synthetic.main.activity_reminder_description.*
 import kotlinx.android.synthetic.main.fragment_save_reminder.*
-import kotlinx.android.synthetic.main.fragment_save_reminder.reminderTitle
 
 /**
  * Activity that displays the reminder details after the user clicks on the notification
@@ -27,7 +25,7 @@ class ReminderDescriptionActivity : AppCompatActivity() {
     // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
     val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
+        intent.action = RemindersActivity.ACTION_GEOFENCE_EVENT
         // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling
         // addGeofences() and removeGeofences().
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
