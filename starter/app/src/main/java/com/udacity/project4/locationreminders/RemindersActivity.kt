@@ -45,6 +45,10 @@ import kotlin.coroutines.CoroutineContext
 /**
  * The RemindersActivity that holds the reminders fragments
  */
+
+const val ACTION_GEOFENCE_EVENT =
+    "SaveReminderFragment.Remainder.action.ACTION_GEOFENCE_EVENT"
+
 class RemindersActivity : AppCompatActivity(), CoroutineScope {
 
     private var coroutineJob: Job = Job()
@@ -52,11 +56,6 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
         get() = Dispatchers.IO + coroutineJob
 
     lateinit var geofencingClient: GeofencingClient
-    private var snackbar: Snackbar? = null
-    private lateinit var viewForSnackbar: View
-
-    private val runningQOrLater =
-        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
     // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
     val geofencePendingIntent: PendingIntent by lazy {
@@ -96,11 +95,6 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
 //        }
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewForSnackbar = findViewById(R.id.nav_host_fragment)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
@@ -110,192 +104,4 @@ class RemindersActivity : AppCompatActivity(), CoroutineScope {
         }
         return super.onOptionsItemSelected(item)
     }
-
-    /*
- *  When we get the result from asking the user to turn on device location, we call
- *  checkDeviceLocationSettingsAndStartGeofence again to make sure it's actually on, but
- *  we don't resolve the check to keep the user from seeing an endless loop.
- */
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        Log.d("GeoFenceTest", "onActivityResult()-activity: $requestCode")
-////        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
-////            // We don't rely on the result code, but just check the location setting again
-////            checkDeviceLocationSettingsAndStartGeofence(false)
-////        }
-//    }
-
-
-    /*
-     * In all cases, we need to have the location permission.  On Android 10+ (Q) we need to have
-     * the background permission as well.
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        Log.d("GeoFenceTest", "onRequestPermissionsResult()-activity 01: $requestCode")
-
-        if (requestCode != REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE ||
-            requestCode != REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE ||
-            requestCode != REQUEST_TURN_DEVICE_LOCATION_ON ) {
-            return
-        }
-        Log.d("GeoFenceTest", "onRequestPermissionsResult()-activity 02: ")
-
-        if (
-            grantResults.isEmpty() ||
-            grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
-            (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
-                    grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
-                    PackageManager.PERMISSION_DENIED))
-        {
-            // Permission denied.
-            snackbar = Snackbar.make(
-                viewForSnackbar,
-                R.string.permission_denied_explanation, Snackbar.LENGTH_INDEFINITE
-            )
-            snackbar?.setAction(R.string.settings) {
-                    // Displays App settings screen.
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
-                }
-            snackbar?.show()
-        } else {
-            checkDeviceLocationSettingsAndStartGeofence()
-        }
-    }
-
-    /**
-     * Starts the permission check and Geofence process only if the Geofence associated with the
-     * current hint isn't yet active.
-     */
-    @RequiresApi(Build.VERSION_CODES.Q)
-    fun checkPermissionsAndStartGeofencing() {
-//        if (viewModel.geofenceIsActive()) return
-        if (foregroundAndBackgroundLocationPermissionApproved()) {
-            checkDeviceLocationSettingsAndStartGeofence()
-        } else {
-            requestForegroundAndBackgroundLocationPermissions()
-        }
-    }
-
-    fun setSnackBar(resId: Int, listener: View.OnClickListener){
-        snackbar = Snackbar.make(
-            viewForSnackbar, resId, Snackbar.LENGTH_INDEFINITE
-        )
-        snackbar?.setAction(android.R.string.ok, listener)
-    }
-
-    /*
-     *  Uses the Location Client to check the current state of location settings, and gives the user
-     *  the opportunity to turn on location services within our app.
-     */
-    private fun checkDeviceLocationSettingsAndStartGeofence(resolve:Boolean = true) {
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        Log.d("GeoFenceTest", "checkDeviceLocationSettingsAndStartGeofence(): ")
-
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-
-        val settingsClient = LocationServices.getSettingsClient(this)
-        val locationSettingsResponseTask =
-            settingsClient.checkLocationSettings(builder.build())
-
-        locationSettingsResponseTask.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException && resolve){
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
-                try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-                    exception.startResolutionForResult(this@RemindersActivity,
-                        REQUEST_TURN_DEVICE_LOCATION_ON)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d(TAG, "Error geting location settings resolution: " + sendEx.message)
-                }
-            } else {
-                snackbar?.show()
-            }
-        }
-        locationSettingsResponseTask.addOnCompleteListener {
-            if ( it.isSuccessful ) {
-            }
-        }
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        snackbar?.dismiss()
-    }
-
-    /*
-     *  Determines whether the app has the appropriate permissions across Android 10+ and all other
-     *  Android versions.
-     */
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
-        val foregroundLocationApproved = (
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(this,
-                            Manifest.permission.ACCESS_FINE_LOCATION))
-        val backgroundPermissionApproved =
-            if (runningQOrLater) {
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(
-                            this, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                        )
-            } else {
-                true
-            }
-        return foregroundLocationApproved && backgroundPermissionApproved
-    }
-
-    /*
-     *  Requests ACCESS_FINE_LOCATION and (on Android 10+ (Q) ACCESS_BACKGROUND_LOCATION.
-     */
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun requestForegroundAndBackgroundLocationPermissions() {
-        if (foregroundAndBackgroundLocationPermissionApproved())
-            return
-
-        // Else request the permission
-        // this provides the result[LOCATION_PERMISSION_INDEX]
-        var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-
-        val resultCode = when {
-            runningQOrLater -> {
-                // this provides the result[BACKGROUND_LOCATION_PERMISSION_INDEX]
-                permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
-            }
-            else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-        }
-
-        Log.d(TAG, "Request foreground only location permission")
-        ActivityCompat.requestPermissions(
-            this@RemindersActivity,
-            permissionsArray,
-            resultCode
-        )
-    }
-
-    companion object {
-        internal const val ACTION_GEOFENCE_EVENT =
-            "SaveReminderFragment.Remainder.action.ACTION_GEOFENCE_EVENT"
-    }
 }
-
-private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
-private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
-private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
-private const val TAG = "HuntMainActivity"
-private const val LOCATION_PERMISSION_INDEX = 0
-private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
-

@@ -25,7 +25,7 @@ class ReminderDescriptionActivity : AppCompatActivity() {
     // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
     val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        intent.action = RemindersActivity.ACTION_GEOFENCE_EVENT
+        intent.action = ACTION_GEOFENCE_EVENT
         // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling
         // addGeofences() and removeGeofences().
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
