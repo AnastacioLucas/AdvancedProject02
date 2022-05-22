@@ -11,8 +11,12 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.pauseDispatcher
+import kotlinx.coroutines.test.resumeDispatcher
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers
-import org.hamcrest.MatcherAssert
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.*
 import org.junit.runner.RunWith
 import org.koin.core.context.stopKoin
@@ -69,8 +73,35 @@ class RemindersListViewModelTest : AutoCloseKoinTest() {
 
         reminderList.let {
             if(reminderList.isNotEmpty()){
-                MatcherAssert.assertThat(reminderList[0].id, CoreMatchers.`is`(reminder.id))
+                assertThat(reminderList[0].id, CoreMatchers.`is`(reminder.id))
             }
         }
+    }
+
+    @Test
+    fun loadStatisticsWhenTasksAreUnavailable_callErrorToDisplay() {
+        // Make the repository return errors
+        tasksRepository.setReturnError(true)
+
+        // When
+        viewModel.loadReminders()
+
+        // Then an error message is shown
+        assertThat(
+            viewModel.showSnackBar.getOrAwaitValue(),
+            CoreMatchers.`is`("Test exception")
+        )
+    }
+
+    @Test
+    fun loadTasks_loading(){
+        // When
+        mainCoroutineRule.pauseDispatcher()
+        viewModel.loadReminders()
+
+        // Then
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(true))
+        mainCoroutineRule.resumeDispatcher()
+        assertThat(viewModel.showLoading.getOrAwaitValue(), `is`(false))
     }
 }

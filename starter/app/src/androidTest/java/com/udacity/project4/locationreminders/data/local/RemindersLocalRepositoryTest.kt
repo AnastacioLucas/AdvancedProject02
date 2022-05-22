@@ -6,11 +6,13 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.data.dto.Result.Success
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.MatcherAssert
 import org.junit.*
 import org.junit.runner.RunWith
 
@@ -66,5 +68,10 @@ class RemindersLocalRepositoryTest {
         result as Success
         Assert.assertThat(result.data.title, `is`(reminder.title))
         Assert.assertThat(result.data.description, `is`(reminder.description))
+
+        localDataSource.deleteAllReminders()
+
+        val currentResult = localDataSource.getReminder(reminder.id) as Result.Error
+        MatcherAssert.assertThat(currentResult.message, `is`("Reminder not found!"))
     }
 }

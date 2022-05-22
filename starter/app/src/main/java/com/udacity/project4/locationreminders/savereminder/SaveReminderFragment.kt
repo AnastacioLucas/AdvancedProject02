@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -25,7 +26,9 @@ import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
+import com.udacity.project4.locationreminders.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.GeofencingConstants
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
@@ -45,6 +48,17 @@ class SaveReminderFragment : BaseFragment() {
 
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+
+    lateinit var geofencingClient: GeofencingClient
+
+    // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
+    val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
+        intent.action = ACTION_GEOFENCE_EVENT
+        // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling
+        // addGeofences() and removeGeofences().
+        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,7 +83,9 @@ class SaveReminderFragment : BaseFragment() {
                 NavigationCommand.To(SaveReminderFragmentDirections.toSelectLocation())
         }
 
-        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+        geofencingClient = LocationServices.getGeofencingClient(requireActivity())
+
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 isEnabled = false
                 snackBar?.dismiss()
@@ -116,22 +132,17 @@ class SaveReminderFragment : BaseFragment() {
      */
     @SuppressLint("MissingPermission")
     private fun addGeofenceForClue() {
-        var remindersActivity = requireActivity() as RemindersActivity
-
-        var geofencingClient = remindersActivity.geofencingClient
-
-        // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
-        var geofencePendingIntent = remindersActivity.geofencePendingIntent
-//
 //        // Build the Geofence Object
+        Log.d("LocationFix","reminder.id: "+reminder.id)
         val geofence = Geofence.Builder()
             // Set the request ID, string to identify the geofence.
+
             .setRequestId(reminder.id)
             // Set the circular region of this geofence.
             .setCircularRegion(reminder.latitude!!, reminder.longitude!!, GEOFENCE_RADIUS_IN_METERS)
             // Set the expiration duration of the geofence. This geofence gets
             // automatically removed after this period of time.
-            .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
             // Set the transition types of interest. Alerts are only generated for these
             // transition. We track entry and exit transitions in this sample.
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)

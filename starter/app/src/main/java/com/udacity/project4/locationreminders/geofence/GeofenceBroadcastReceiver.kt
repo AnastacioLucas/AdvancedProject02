@@ -20,6 +20,7 @@ private const val TAG = "GeofenceTransitionsJobIntentService"
 class GeofenceBroadcastReceiver : BroadcastReceiver(){
 
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("LocationFix", "GeofenceBroadcastReceiver()")
         GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }
 }

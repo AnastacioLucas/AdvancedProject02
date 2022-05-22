@@ -49,28 +49,11 @@ import kotlin.coroutines.CoroutineContext
 const val ACTION_GEOFENCE_EVENT =
     "SaveReminderFragment.Remainder.action.ACTION_GEOFENCE_EVENT"
 
-class RemindersActivity : AppCompatActivity(), CoroutineScope {
-
-    private var coroutineJob: Job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + coroutineJob
-
-    lateinit var geofencingClient: GeofencingClient
-
-    // A PendingIntent for the Broadcast Receiver that handles geofence transitions.
-    val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        intent.action = ACTION_GEOFENCE_EVENT
-        // Use FLAG_UPDATE_CURRENT so that you get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
+class RemindersActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reminders)
-
-        geofencingClient = LocationServices.getGeofencingClient(this)
 
 //        val remindersLocalRepository: RemindersLocalRepository by inject()
 //        Interaction to the repository has to be through a coroutine scope

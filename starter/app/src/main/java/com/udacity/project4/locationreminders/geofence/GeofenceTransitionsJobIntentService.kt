@@ -38,39 +38,26 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
     }
 
     override fun onHandleWork(intent: Intent) {
-        Log.d("GeoFenceTest","onHandleWork() 01")
-
         if (intent.action == ACTION_GEOFENCE_EVENT) {
             val geofencingEvent = GeofencingEvent.fromIntent(intent)
-
-            Log.d("GeoFenceTest","onHandleWork() 02")
 
             if (geofencingEvent.hasError()) {
                 val errorMessage = errorMessage(applicationContext, geofencingEvent.errorCode)
                 Log.e(TAG, errorMessage)
-                Log.d("GeoFenceTest","onHandleWork() 03")
                 return
             }
-
-            Log.d("GeoFenceTest","onHandleWork() 04")
 
             if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 Log.v(TAG, applicationContext.getString(R.string.geofence_entered))
 
-                val fenceId = when {
-                    geofencingEvent.triggeringGeofences.isNotEmpty() ->
-                        geofencingEvent.triggeringGeofences[0].requestId
-                    else -> {
-                        return
-                    }
+                geofencingEvent.triggeringGeofences.forEach {
+                    sendNotification(it.requestId)
                 }
-                sendNotification(fenceId)
             }
         }
     }
 
     private fun sendNotification(requestId: String) {
-        Log.d("GeoFenceTest","sendNotification() 01")
         //Get the local repository instance
         val remindersLocalRepository: RemindersLocalRepository by inject()
 
