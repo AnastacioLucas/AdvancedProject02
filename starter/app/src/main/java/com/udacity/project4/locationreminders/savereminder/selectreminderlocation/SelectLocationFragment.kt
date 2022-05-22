@@ -306,6 +306,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateLocationUI()
+    }
+
     private fun updateLocationUI() {
         if (this::map.isInitialized) {
             try {
