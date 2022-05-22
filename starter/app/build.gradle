@@ -154,7 +154,7 @@ dependencies {
     // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
     implementation "androidx.fragment:fragment-testing:1.4.1"
     implementation "androidx.test:core:1.4.0"
-    implementation "androidx.fragment:fragment-ktx:1.4.1"
+    implementation "androidx.fragment:fragment-ktx:1.5.0-rc01"
     androidTestImplementation "org.mockito:mockito-core:4.3.1"
     androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:2.28.1"
 //    androidTestImplementation('org.koin:koin-test:2.0.1') { exclude group: 'org.mockito' }
@@ -164,12 +164,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.firebaseui:firebase-ui-database:8.0.0'
     implementation 'com.firebaseui:firebase-ui-firestore:8.0.0'
-    implementation 'com.firebaseui:firebase-ui-auth:8.0.0'
+    implementation 'com.firebaseui:firebase-ui-auth:8.0.1'
     implementation 'com.firebaseui:firebase-ui-storage:8.0.0'
 
     //Maps & Geofencing
     implementation "com.google.android.gms:play-services-location:19.0.1"
     implementation "com.google.android.gms:play-services-maps:18.0.2"
-
-
 }
